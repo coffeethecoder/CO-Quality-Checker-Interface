@@ -16,7 +16,7 @@
   /* Borders */
   --color-border:        #E2E8F0;
   --color-border-hover:  #CBD5E1;
-  --color-border-focus:  rgba(160, 30, 37, 0.4);
+  --color-border-focus:  rgba(160, 30, 37, 0.15);
 
   /* Text Hierarchy */
   --text-display:  #0F172A;
@@ -66,7 +66,6 @@ body {
   border-radius: 16px;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--color-border);
-  overflow: hidden;
 }
 
 .workspace {
@@ -98,6 +97,7 @@ body {
   top: 0;
   z-index: 100;
   min-height: 64px;
+  border-radius: 16px 16px 0 0;
 }
 
 .header-logo { max-height: 44px; width: auto; object-fit: contain; }
@@ -168,7 +168,7 @@ body {
   resize: none;
 }
 .form-control::placeholder { color: var(--text-disabled); }
-.form-control:focus { outline: none; background-color: var(--color-surface); border-color: var(--color-primary); box-shadow: 0 0 0 4px var(--color-border-focus); }
+.form-control:focus { outline: none; background-color: var(--color-surface); border-color: var(--color-primary); box-shadow: 0 0 1px 3px var(--color-border-focus) }
 
 .input-hint { display: flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 0.8rem; color: var(--text-muted); }
 .input-hint svg { flex-shrink: 0; color: var(--color-primary); }
@@ -272,7 +272,11 @@ body {
 .bloom-seg::after, .error-tooltip::after {
   position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%) translateY(5px);
   color: white; padding: 8px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 500;
-  white-space: nowrap; box-shadow: var(--shadow-md); opacity: 0; visibility: hidden;
+  white-space: normal;
+  width: max-content;
+  max-width: 220px;
+  text-align: center;
+  box-shadow: var(--shadow-md); opacity: 0; visibility: hidden;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); z-index: 20; pointer-events: none;
 }
 
@@ -313,7 +317,7 @@ body {
 /* ─────────────────────────────────────────────────────────────
    Feedback Panel
 ───────────────────────────────────────────────────────────── */
-.feedback-section { border-top: 1px solid var(--color-border); background: var(--color-surface-muted); }
+.feedback-section { border-top: 1px solid var(--color-border); background: var(--color-surface-muted); border-radius: 0 0 16px 16px; }
 .feedback-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
 .feedback-title { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; font-weight: 600; color: var(--text-display); }
 .feedback-title svg { color: var(--color-primary); }
