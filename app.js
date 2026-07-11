@@ -33,6 +33,8 @@ const exportBtn       = document.getElementById('export-btn');
 
 const highlightedOut  = document.getElementById('highlighted-output');
 const statusEl        = document.getElementById('analysis-status');
+
+const feedbackSection = document.getElementById('feedback-section');
 const feedbackList    = document.getElementById('feedback-list');
 const feedbackCount   = document.getElementById('feedback-count');
 
@@ -44,6 +46,8 @@ const levelSegments       = document.querySelectorAll('.bloom-seg');
 
 const chartContainer = document.getElementById('analytics-chart-container');
 const chartWrapper   = document.getElementById('svg-chart-wrapper');
+
+const toastContainer = document.getElementById('toast-container');
 
 // ── State Management (Local Storage & Data Array) ─────────────
 let coDataArray = [];
@@ -163,7 +167,10 @@ csvUpload.addEventListener('change', (e) => {
 // ── Batch Analyze Engine ──────────────────────────────────────
 analyzeBtn.addEventListener('click', () => {
   const activeCOs = coDataArray.filter(text => text.trim() !== '');
-  if (activeCOs.length === 0) return;
+  if (activeCOs.length === 0) {
+      showToast('Please write a Course Outcome or import a CSV before running the analysis.', 'error');
+      return;
+    }
 
   setStatus('running', 'Analyzing Batch...');
   analyzeBtn.disabled = true;
@@ -259,7 +266,8 @@ analyzeBtn.addEventListener('click', () => {
     setStatus('done', 'Complete');
     analyzeBtn.disabled = false;
     exportBtn.style.display = 'inline-flex';
-    
+    feedbackSection.style.display = 'block';
+
     // Inject the individually processed blocks
     highlightedOut.className = 'rich-text-box';
     highlightedOut.innerHTML = finalHTMLOutput;
@@ -271,6 +279,24 @@ analyzeBtn.addEventListener('click', () => {
 });
 
 // ── Helpers ───────────────────────────────────────────────────
+function showToast(message, type = 'error') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  
+  const icon = type === 'error' 
+    ? `<svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+    : `<svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+
+  toast.innerHTML = `${icon} <span>${message}</span>`;
+  toastContainer.appendChild(toast);
+
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    toast.style.animation = 'toast-fade-out 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
+    toast.addEventListener('animationend', () => toast.remove());
+  }, 4000);
+}
+
 function renderChart(distribution) {
   // If no verbs were found across all COs, hide the chart
   if (distribution.every(val => val === 0)) {
@@ -329,6 +355,7 @@ function resetResults() {
   feedbackCount.textContent = '0 suggestions';
   setStatus('idle', 'Idle');
   chartContainer.style.display = 'none';
+  feedbackSection.style.display = 'none'; 
 }
 
 function setMetrics({ verbs, measurability, score }) {
