@@ -39,9 +39,18 @@
       <div class="form-group">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <label class="form-label" style="margin-bottom: 0;">Course Outcomes</label>
-          <button id="add-co-btn" class="btn badge-soft" style="padding: 4px 10px; font-size: 0.8rem;">
-            + Add Another CO
-          </button>
+          
+          <div style="display: flex; gap: 8px;">
+            <label for="csv-upload" class="btn badge-soft" style="padding: 4px 10px; font-size: 0.8rem; cursor: pointer; margin: 0;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Import CSV
+            </label>
+            <input type="file" id="csv-upload" accept=".csv" style="display: none;">
+            
+            <button id="add-co-btn" class="btn badge-soft" style="padding: 4px 10px; font-size: 0.8rem;">
+              + Add Another CO
+            </button>
+          </div>
         </div>
         
         <div id="co-list-container" class="co-list-scroll-area">
@@ -143,6 +152,14 @@
             <span class="quality-score-max">/100</span>
           </div>
         </div>
+      </div>
+      
+      <div class="chart-container" style="display: none;" id="analytics-chart-container">
+        <div class="metric-header" style="margin-bottom: 16px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"/></svg>
+          <h4>Course Rigor Distribution</h4>
+        </div>
+        <div id="svg-chart-wrapper"></div>
       </div>
     </section>
 

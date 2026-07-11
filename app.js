@@ -32,6 +32,9 @@ const metricMeasurability = document.getElementById('metric-measurability');
 const metricScore         = document.getElementById('metric-score');
 const levelSegments       = document.querySelectorAll('.bloom-seg');
 
+const chartContainer = document.getElementById('analytics-chart-container');
+const chartWrapper   = document.getElementById('svg-chart-wrapper');
+
 // ── State Management (Local Storage & Data Array) ─────────────
 let coDataArray = [];
 
@@ -119,6 +122,7 @@ analyzeBtn.addEventListener('click', () => {
     let totalScore = 0;
     let anyMeasurable = false;
     let highestCognitiveLevel = 0;
+    let bloomDistribution = [0, 0, 0, 0, 0, 0];
     let finalHTMLOutput = ''; // Stores the final rendered HTML
     
     // Process each CO individually
@@ -148,7 +152,8 @@ analyzeBtn.addEventListener('click', () => {
           if (!globalFoundVerbs.includes(verb)) globalFoundVerbs.push(verb);
           let level = Math.ceil((index + 1) / 5); 
           if(level > highestCognitiveLevel) highestCognitiveLevel = level;
-          
+
+          bloomDistribution[level - 1]++;
           highlightedText = highlightedText.replace(regex, m => `<span class="hl-verb">${m}</span>`);
         }
       });
@@ -206,11 +211,45 @@ analyzeBtn.addEventListener('click', () => {
     
     setMetrics({ verbs: globalFoundVerbs.length, measurability: anyMeasurable ? 'High' : 'Low', score: finalScore });
     renderFeedback(feedbackItems);
-
+    renderChart(bloomDistribution);
   }, 800);
 });
 
 // ── Helpers ───────────────────────────────────────────────────
+function renderChart(distribution) {
+  // If no verbs were found across all COs, hide the chart
+  if (distribution.every(val => val === 0)) {
+    chartContainer.style.display = 'none';
+    return;
+  }
+
+  chartContainer.style.display = 'block';
+  
+  const maxVal = Math.max(...distribution, 1); // Prevent division by zero
+  const svgHeight = 120;
+  const labels = ['L1 (Remember)', 'L2 (Understand)', 'L3 (Apply)', 'L4 (Analyze)', 'L5 (Evaluate)', 'L6 (Create)'];
+  
+  let svgHTML = `<svg class="svg-chart" viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet">`;
+  
+  distribution.forEach((val, i) => {
+    // Calculate relative height
+    const barHeight = (val / maxVal) * svgHeight;
+    const yPosition = svgHeight - barHeight + 15; // 15px top padding for the number
+    
+    // Spacing across a 600px wide viewBox
+    const xPosition = (i * 100) + 25; 
+    
+    svgHTML += `
+      <rect class="chart-bar" x="${xPosition}" y="${yPosition}" width="50" height="${barHeight}" rx="4" />
+      <text class="chart-label" x="${xPosition + 25}" y="145">${labels[i]}</text>
+      <text class="chart-value" x="${xPosition + 25}" y="${yPosition - 8}">${val > 0 ? val : ''}</text>
+    `;
+  });
+  
+  svgHTML += `</svg>`;
+  chartWrapper.innerHTML = svgHTML;
+}
+
 function setStatus(type, label) {
   statusEl.className = `status-indicator status-${type}`;
   statusEl.textContent = label;
@@ -234,6 +273,7 @@ function resetResults() {
   feedbackList.innerHTML = `<div class="feedback-placeholder"><p>Run analysis to receive actionable feedback.</p></div>`;
   feedbackCount.textContent = '0 suggestions';
   setStatus('idle', 'Idle');
+  chartContainer.style.display = 'none';
 }
 
 function setMetrics({ verbs, measurability, score }) {
