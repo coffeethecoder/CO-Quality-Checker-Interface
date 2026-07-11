@@ -10,7 +10,17 @@ const dictionaries = {
     'evaluate', 'judge', 'justify', 'critique', 'assess', 
     'design', 'develop', 'construct', 'formulate', 'create'
   ],
-  vague: ['understand', 'know', 'learn', 'appreciate', 'familiarize', 'realize', 'aware', 'study', 'grasp'],
+  vague: {
+    'understand': 'Try: Define, Describe, or Identify',
+    'know': 'Try: List, State, or Explain',
+    'learn': 'Try: Apply, Analyze, or Demonstrate',
+    'appreciate': 'Try: Evaluate, Critique, or Justify',
+    'familiarize': 'Try: Review, Examine, or Outline',
+    'realize': 'Try: Conclude, Formulate, or Calculate',
+    'aware': 'Try: Recognize, Differentiate, or Detect',
+    'study': 'Try: Investigate, Classify, or Categorize',
+    'grasp': 'Try: Summarize, Solve, or Illustrate'
+  },
   measurability: ['using', 'by', 'through', 'with', 'applying', 'based on', 'accuracy', 'efficiency']
 };
 
@@ -108,6 +118,48 @@ exportBtn.addEventListener('click', () => {
   window.print();
 });
 
+// ── CSV Bulk Importer Engine ──────────────────────────────────
+const csvUpload = document.getElementById('csv-upload');
+
+csvUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  
+  reader.onload = (event) => {
+    const text = event.target.result;
+    
+    // Split text by line breaks, strip stray quotes, and filter out empty rows
+    const rows = text.split(/\r?\n/)
+                     .map(row => row.replace(/^["']|["']$/g, '').trim())
+                     .filter(row => row.length > 0);
+    
+    if (rows.length > 0) {
+      // If the user hasn't typed anything yet, replace the empty box. 
+      // Otherwise, append the CSV data to their existing work.
+      if (coDataArray.length === 1 && coDataArray[0] === '') {
+        coDataArray = rows;
+      } else {
+        coDataArray = [...coDataArray, ...rows];
+      }
+      
+      saveState();
+      renderCoInputs();
+      
+      // Auto-scroll to show the newly imported data
+      setTimeout(() => {
+        coListContainer.scrollTop = coListContainer.scrollHeight;
+      }, 100);
+    }
+  };
+  
+  reader.readAsText(file);
+  
+  // Clear the input so the same file can be uploaded again if needed
+  e.target.value = '';
+});
+
 // ── Batch Analyze Engine ──────────────────────────────────────
 analyzeBtn.addEventListener('click', () => {
   const activeCOs = coDataArray.filter(text => text.trim() !== '');
@@ -134,17 +186,20 @@ analyzeBtn.addEventListener('click', () => {
       
       let highlightedText = coText;
 
-      // 1. Scan for Vague Words first
-      dictionaries.vague.forEach(vagueWord => {
+// 1. Scan for Vague Words first (Upgraded for Tooltips)
+      Object.keys(dictionaries.vague).forEach(vagueWord => {
         const regex = new RegExp(`\\b${vagueWord}\\b`, 'gi');
         if (regex.test(lowerText)) {
           if (!globalIssues.includes(vagueWord)) globalIssues.push(vagueWord);
           coScore -= 30;
-          highlightedText = highlightedText.replace(regex, m => `<span class="hl-error">${m}</span>`);
+          
+          // Grab the specific suggestion and inject it into the HTML span
+          const suggestion = dictionaries.vague[vagueWord];
+          highlightedText = highlightedText.replace(regex, m => `<span class="hl-error error-tooltip" data-suggestion="${suggestion}">${m}</span>`);
         }
       });
 
-      // 2. Scan for Action Verbs
+// 2. Scan for Action Verbs
       dictionaries.actionVerbs.forEach((verb, index) => {
         const regex = new RegExp(`\\b${verb}\\b`, 'gi');
         if (regex.test(lowerText)) {
